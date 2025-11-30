@@ -1,12 +1,10 @@
 import random
 import torch
 import numpy as np
-from resize import image_aspect
 from torchvision.transforms import functional as F
 from PIL import Image, ImageEnhance
 from PIL.ImageFilter import BLUR
 from typing import Tuple
-
 
 def CenterGaussianHeatMap(self, keypoints, height, weight, variance):
     c_x = keypoints[0]
@@ -22,14 +20,11 @@ def CenterGaussianHeatMap(self, keypoints, height, weight, variance):
     xmax = max(map(max, gaussian_map))
     xmin = min(map(min, gaussian_map))
     gaussian_map_nor = (gaussian_map - xmin) / (xmax - xmin)
-    # Gau = Image.fromarray(gaussian_map)
-    # Gau.show()
     return gaussian_map_nor
 
 
 def _putGaussianMaps(self, keypoints, crop_size_y, crop_size_x, sigma):
     """
-
     :param keypoints: (24,2)
     :param crop_size_y: int  512
     :param crop_size_x: int  512
@@ -48,8 +43,6 @@ def _putGaussianMaps(self, keypoints, crop_size_y, crop_size_x, sigma):
         heatmap = heatmap[np.newaxis, ...]
         heatmaps_this_img.append(heatmap)
     heatmaps_this_img = np.concatenate(heatmaps_this_img, axis=0)  # (num_joint,crop_size_y/stride,crop_size_x/stride)
-    #np.save('./crop_txt/{}'.format(self.image_name), heatmaps_this_img)
-    #print('save done')
     return heatmaps_this_img
 
 def scale_box(xmin: float, ymin: float, w: float, h: float, scale_ratio: Tuple[float, float]):
@@ -80,11 +73,7 @@ class ToTensor(object):
         heatmaps = torch.tensor(heatmaps,dtype=float)
         gt = np.array(gt)
         gt = torch.tensor(gt,dtype=float)
-
-
         return image, heatmaps,gt
-
-
 
 
 class Normalize(object):
@@ -119,10 +108,7 @@ class Blur(object):
             image = Image.fromarray(image)
             image.filter(BLUR)
             image = np.asarray(image)
-            #new_img = enh_bri.enhance(1.5)
         return image, heatmaps, gt
-
-
 
 class RandomCrop(object):
     def __init__(self,prob=0.5, H=512, W=512):
@@ -139,8 +125,6 @@ class RandomCrop(object):
                 xmax, ymax = np.max(selected_kps, axis=0).tolist()
                 w = xmax - xmin
                 h = ymax - ymin
-                # if w > 1 and h > 1:
-                #     # 把w和h适当放大点，要不然关键点处于边缘位置
                 xmin, ymin, w, h = scale_box(xmin, ymin, w, h, (1.5, 1.5))
 
             xmax = xmin+w
@@ -151,20 +135,9 @@ class RandomCrop(object):
             xmax = int(xmax)
             ymax = int(ymax)
 
-
-            #img = Image.fromarray(image)
-            #img = img.crop((xmin,ymin,xmax,ymax))
-            #heatmaps_pil = Image.fromarray(heatmaps)
-            # for i in range(24):
-            #     heatmaps_pil[i] = heatmaps_pil[i].crop((xmin,ymin,xmax,ymax))
-
             img = np.asarray(image)[ymin:ymax, xmin:xmax]
             heatmaps = np.asarray(heatmaps)[:,ymin:ymax, xmin:xmax]
-
-
             points = gt - np.array([xmin ,ymin])
-        #heatmaps = _putGaussianMaps(self, keypoints=points, crop_size_x=self.H,crop_size_y=self.W,sigma=10.0)
-
         return img,heatmaps,points
 
 class ReservePixel(object):
@@ -177,20 +150,6 @@ class ReservePixel(object):
             image = Image.fromarray(image)
         return image, heatmaps, gts
 
-
-# class Resize(object):
-#     def __init__(self, H,W):
-#         self.H = H
-#         self.W = W
-#     def __call__(self,image,heatmaps,gt):
-#         x = image_aspect(image, self.H, self.W).change_aspect_rate().past_background().PIL2ndarray()
-#         rate, offset = image_aspect(image, self.H, self.W).save_rate()
-#         #print(offset)
-#         gt = gt * np.array([rate]) + offset
-#         return x, heatmaps, gt
-
-
-
 class RandomHorizontalFlip(object):
     """随机水平翻转图像"""
     def __init__(self, prob=0.5,H=512 ,W= 512):
@@ -200,23 +159,10 @@ class RandomHorizontalFlip(object):
         global gt_flip
     def __call__(self, image, heatmaps , gt):
         if random.random() < self.prob:
-            #global gt_flip
+            
             height, width = self.H, self.W
             image = np.ascontiguousarray(np.flip(image, axis=[1]))
-            #print(max(image))
             heatmaps = np.ascontiguousarray(np.flip(heatmaps, axis=[1]))
-            #print('ori',gt)
             gt = gt *np.array([1])
             gt[:,[0]] = height-gt[:,[0]]
-            #print('fil',gt)
-            #print('debug')
-
-
-            # bbox[:, [0, 2]] = width - bbox[:, [2, 0]]  # 翻转对应bbox坐标信息
-            # target["boxes"] = bbox
-            # keypoints = target["keypoints"]
-            # keypoints[:, [0]] = width - keypoints[:, [0]]
-            # target["keypoints"] = keypoints
-
-            #change keypoint
         return image, heatmaps, gt
