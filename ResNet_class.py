@@ -40,9 +40,6 @@ parser.add_argument("--keypoint_model", type=str, default='Spine_T',
                          "SENet101 "
                          "2019MICCAI")
 
-# parser.add_argument("--data_dir", type=str, default='../data',
-#                     help="the data dir")
-
 parser.add_argument("--sigma", type=float, default=10.0,
                     help="the sigma of generated heatmaps.")
 parser.add_argument("--seed", type=int, default=0,
@@ -168,10 +165,6 @@ config['featurename2id'] = {
     'C7_DL': 23,
     }
 
-
-
-
-
 def seed_torch(seed=1029):
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)  # 为了禁止hash随机化，使得实验可复现
@@ -183,15 +176,8 @@ def seed_torch(seed=1029):
     torch.backends.cudnn.deterministic = True
 
 
-
-
-
-
-
-
-
 if __name__ == '__main__':
-    #init_distributed_mode(args=args)
+   
     images1 = sorted(glob.glob(os.path.join(config['train_image_path'], '*.jpg')))
     labels1 = sorted(glob.glob(os.path.join(config['path_label_train'], '*_jpg_Label.json')))
     folder = KFold(n_splits=5, random_state=42, shuffle=True)
@@ -203,7 +189,7 @@ if __name__ == '__main__':
     for k, (Trindex, Tsindex) in enumerate(folder.split(data_dicts1)):
         train_files.append(np.array(data_dicts1)[Trindex].tolist())
         test_files.append(np.array(data_dicts1)[Tsindex].tolist())
-    #device = torch.device(config['device'] if torch.cuda.is_available() else "cpu")
+
 
     pprint.pprint(config)
     torch.manual_seed(args.seed)
@@ -219,13 +205,12 @@ if __name__ == '__main__':
     elif args.keypoint_model == 'SENet101':
         net = SEResNet101()
         config['checkout'] ='/public/huangjunzhang/KeyPointsDetection-master/Checkpoints_final/SEnet101/'
-        #config['lr'] = 0.001
-
+     
     elif args.keypoint_model == 'Spine_T':
         print('using spine transformer for training')
         net, criterion, postprocessors = build(args)
         config['checkout'] ='/public/huangjunzhang/KeyPointsDetection-master/Checkpoints_2308/Spine/'
-        #config['lr'] = 0.001
+     
     elif args.keypoint_model == 'Vit':
         print('using vision transformer')
         net = creare_model(num_classes=6, has_logits=False)
@@ -250,9 +235,7 @@ if __name__ == '__main__':
     else:
         net = torchvision.models.resnet50(pretrained=True,num_classes=6)
         config['checkout'] ='/public/huangjunzhang/KeyPointsDetection-master/Checkpoints_final/ResNet50/'
-        # config['lr'] = 0.001
 
-        #net = torchvision.models.se
     print('Initial learning rate :',config['lr'])
     print ('Saving checkpoint to',config['checkout'])
 
@@ -261,20 +244,13 @@ if __name__ == '__main__':
         net = nn.DataParallel(net, device_ids=gpus)
     net = net.cuda()
 
-
-    #criterion = torch.nn.BCELoss()
-    #criterion = KpLoss()
-    #class_criterion = CLALoss()
     class_criterion = torch.nn.BCELoss(reduction='mean')
 
     coord_criterion = nn.SmoothL1Loss(reduction='mean')
     coord_criterion_none = nn.SmoothL1Loss(reduction='none')
-    #coord_criterion = nn.MSELoss(reduction='mean')
+ 
 
-    #criterion = nn.BCELoss()
-    #optimizer = optim.SGD(net.parameters(), lr=config['lr'], momentum=config['momentum'] , weight_decay=config['weight_decay'])
     optimizer = optim.Adam(net.parameters(), lr=config['lr'], weight_decay=config['weight_decay'])
-    #lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=config['lr_steps'], gamma=config['lr_gamma'])
     lr_scheduler = torch.optim.lr_scheduler.OneCycleLR(
         optimizer,
         max_lr=config['lr'],
@@ -284,20 +260,14 @@ if __name__ == '__main__':
         last_epoch=0 - 1,
     )
 
-    # optimizer = optim.RMSprop(net.parameters(),lr=config['lr'],
-    #                                 weight_decay=config['weight_decay'],
-    #                                 momentum=config['momentum'])
-    # 定义 Dataset
 
     data_transforms = {
         "train": transform_spine.Compose([
-                                     #transform_new.Resize(H=224,W=224),
+                                   
                                      transform_spine.RandomHorizontalFlip(0.5),
                                      transform_spine.Blur(),
-                                     #transforms.Brightness(),
+                                   
                                      transform_spine.ToTensor(),
-
-                                     # transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
                                      ]),
 
         "val" : transform_spine.Compose([transform_spine.ToTensor(),
@@ -330,62 +300,31 @@ if __name__ == '__main__':
     for epoch in range(config['start_epoch'],config['epoch_num']+config['start_epoch']):
         net.float().cuda()
         net.train()
-        #metric_logger = utils.MetricLogger(delimiter="  ")
-        #metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
-        #header = 'Epoch: [{}]'.format(epoch)
 
         print("current learn rate:", optimizer.state_dict()['param_groups'][0]["lr"])
         for i, (inputs, info) in enumerate(trainDataLoader):
-            #running_loss = 0
-            #lam = 1 if epoch> 20 else 0
             lam = 1 if epoch> 20 else 1
             inputs = Variable(inputs).cuda().float()
-
-
-            #heatmaps_targets = Variable(info["heatmaps"]).cuda()
-            #mask,indices_valid = calculate_mask(heatmaps_targets)
-
-            # celoss
 
             optimizer.zero_grad()
             class_output = net(inputs)
 
             loss_mask = info["loss_mask"].cuda()
             logits = class_output['pred_logits'].squeeze()
-            #logits = torch.max(logits.reshape(-1, 6, 4), dim=2).values
-            #labels = torch.max(info["label"].reshape(-1, 6, 4), dim=2).values
-            #
             class_loss = class_criterion(logits, info["label"].float().cuda())
-            #coord_loss = coord_criterion(class_output['pred_boxes'],info["keypoints"].float().cuda())
             coord_loss_no = coord_criterion_none(class_output['pred_boxes'], info["keypoints"].float().cuda())
             coord_loss = coord_loss_no.sum()
-            #class_loss = class_loss.sum()
-            #class_loss = torch.mean(torch.sum(class_loss, dim=(0,1)))
-
+          
             total_loss = coord_loss+class_loss*lam
             total_loss.backward()
             optimizer.step()
-
-
+          
             # 统计最大值与最小值
             if (i+1) % config['eval_freq'] == 0:
                 print('---------------calculate loss-------')
                 print('[ Epoch {:005d} -> {:005d} / {} ] loss : {:15} ,CLASSLOSS:{},COORDSLOSS:{}'.format(
                     epoch, i * config['batch_size'],
                     sample_num, total_loss.item(),class_loss.item(),coord_loss.item()))
-
-
-
-                # print('[ Epoch {:005d} -> {:005d} / {} ] loss : {:15} class_loss:{:15} max : {:10} min : {}'.format(
-                #     epoch, i * config['batch_size'],
-                #     sample_num, running_loss.item(),class_loss.item(),v_max.item(),v_min.item()))
-                # print('---------------calculate loss-------')
-                # print('[ Epoch {:005d} -> {:005d} / {} ] loss : {:15}  max : {:10} min : {}'.format(
-                #     epoch, i * config['batch_size'],
-                #     sample_num, running_loss.item(),v_max.item(),v_min.item()))
-
-            #评估
-
 
 
         train_loss.append(train_loss)
@@ -403,13 +342,7 @@ if __name__ == '__main__':
                 best_auc = mean_auc
             print("best_auc is:", best_auc)
         vali_loss.append(loss_mean)
-        #
-        # torch.save(net.module.state_dict() if len(gpus) > 1 else net.state_dict(),
-        #            config['checkout']+'kd_epoch_vit{epoch}_{seed}gray.ckpt'.format(epoch=epoch, seed=args.seed))
-        # if (epoch+1) % config['save_freq'] == 0 or epoch == config['epoch_num'] - 1:
-        #     torch.save(net.module.state_dict()if len(gpus) > 1 else net.state_dict(),'./Checkpoints/kd_epoch_off{}_model.ckpt'.format(epoch))
-            #evaluate_one(model=net, dataloader=valDataLoader)
-    # plt.figure()
+     
     plt.figure()
     plt.plot(train_loss, 'b-', label='train_loss')
     plt.plot(vali_loss, 'r-',label='val_loss')
