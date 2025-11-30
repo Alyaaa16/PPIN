@@ -8,14 +8,10 @@ from torch.utils.data import DataLoader
 import numpy as np
 import pprint
 import transforms
-from data_loader import KFDataset
-#from models import KFSGNet
+# from data_loader import KFDataset
+from dataloader_new import KFDataset
 import os
 import argparse
-#from multi_train_utils.distributed_utils import init_distributed_mode, dist ,cleanup ,reduce_value
-#from train_eval import evaluate_one
-#rom network import UNet_Pretrained
-#from U2Net import U2Net
 import matplotlib.pyplot as plt
 from loss import KpLoss,CLALoss
 import tempfile
@@ -30,19 +26,12 @@ config['debug_vis'] = False
 
 config['train_fname'] = ''
 config['test_fname'] =''
-#config ['path_image'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_train/'
 config ['test_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_test/'
 config ['train_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_train/'
 
-# config ['test_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/lumbar_test/'
-# config ['train_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/lumbar_train/'
-
 config['path_label'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/'
-#config['path_label_train'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/train_json/'
 config['path_label_train'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/lumbar_json'
-#config['json_path']='/public/huangjunzhang/test/keypoints_train.json'
 config['is_test'] = False
-
 config['save_freq'] = 10
 config['checkout'] = '/public/huangjunzhang/KeyPointsDetection-master/Checkpoints/kd_MLT_epoch_499_model.ckpt'
 config['start_epoch'] = 0
@@ -134,53 +123,15 @@ def calculate_mask(heatmaps_targets):
     return mask,[N_idx,C_idx]
 
 
-
-
-#
-# def init_distributed_mode(args):
-#     #
-#     if 'RANK' in os.environ and 'WORLD_SIZE' in os.environ:
-#         args.rank = int(os.environ["RANK"])
-#         args.world_size = int(os.environ['WORLDZ_SIZE'])
-#         args.gpu = int(os.environ['LOCAL_RANK'])
-#     elif 'SLURM_PROCID' in os.environ:
-#         args.rank = int(os.environ['SLURM_PROCID'])
-#         args.gps = args.rank % torch.cuda.device_count()
-#
-#     else:
-#         print('Not using distributed mode')
-#         args.distributed =False
-#         return
-#     args.distributed = True
-#     torch.cuda.set_device(args.gpu)
-#     args.dist_backend = 'nccl'
-#     dist.barrier()
-
-
 def main(args):
     if torch.cuda.is_available() is False:
         raise EnvironmentError("not find GPU device for training.")
-    #init_distributed_mode(args=args)
 
     rank = args.rank
     device = torch.device(args.device)
     batch_size = args.batch_size
-    #weights_path = args.weights
     args.lr *= args.world_size  # 学习率要根据并行GPU的数量进行倍增
-
-    #train_info, val_info, num_classes = read_split_data(args.data_path)
-    #train_images_path, train_images_label = train_info
-    #val_images_path, val_images_label = val_info
     pprint.pprint(config)
-
-
-    #criterion2 = nn.P()
-    #optimizer = optim.SGD(net.parameters(), lr=config['lr'], momentum=config['momentum'] , weight_decay=config['weight_decay'])
-    #optimizer = optim.Adam(net.parameters(),lr=config['lr'], weight_decay=config['weight_decay'])
-    # optimizer = optim.RMSprop(net.parameters(),lr=config['lr'],
-    #                                 weight_decay=config['weight_decay'],
-    #                                 momentum=config['momentum'])
-    # 定义 Dataset
 
     data_transforms = {
         "train": transforms.Compose([
@@ -202,20 +153,14 @@ def main(args):
     train_sampler = torch.utils.data.distributed.DistributedSampler(trainDataset)
     testDataset = KFDataset(config, mode='test',transforms=data_transforms["val"])
     test_sampler = torch.utils.data.distributed.DistributedSampler(testDataset)
-    #testDataLoader = DataLoader(testDataset,1, True, num_workers=8)
-    # 将样本索引每batch_size个元素组成一个list
     train_batch_sampler = torch.utils.data.BatchSampler(
         train_sampler, batch_size, drop_last=True)
 
     nw = min([os.cpu_count(), batch_size if batch_size > 1 else 0, 8])  # number of workers
     if rank == 0:
         print('Using {} dataloader workers every process'.format(nw))
-    #trainDataset.load()
-    # 定义 data loader
     sample_num = len(trainDataset)
     print(sample_num)
-
-
 
     trainDatasetloader = torch.utils.data.DataLoader(trainDataset,
                                                batch_sampler=train_batch_sampler,
@@ -227,8 +172,6 @@ def main(args):
                                                pin_memory=True,
                                                num_workers=nw)
                                                #collate_fn=trainDataset.collate_fn)
-
-
 
     # collate_fn=trainDataset.collate_fn)
 
@@ -317,9 +260,6 @@ def main(args):
 
 if __name__ == '__main__':
 
-
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=config['epoch_num'])
     parser.add_argument('--batch-size', type=int, default=config['batch_size'])
@@ -328,17 +268,10 @@ if __name__ == '__main__':
     # 是否启用SyncBatchNorm
     parser.add_argument('--syncBN', type=bool, default=True)
 
-
-
-    # parser.add_argument('--weights', type=str, default='resNet34.pth',
-    #                     help='initial weights path')
-    # parser.add_argument('--freeze-layers', type=bool, default=False)
-    # 不要改该参数，系统会自动分配
     parser.add_argument('--device', default='cuda', help='device id (i.e. 0 or 0,1 or cpu)')
     # 开启的进程数(注意不是线程),不用设置该参数，会根据nproc_per_node自动设置
     parser.add_argument('--world-size', default=4, type=int,
                         help='number of distributed processes')
     parser.add_argument('--dist-url', default='env://', help='url used to set up distributed training')
     opt = parser.parse_args()
-
     main(opt)
