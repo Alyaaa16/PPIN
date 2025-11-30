@@ -12,7 +12,8 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import itertools
-from resize import image_aspect
+# from resize import image_aspect
+from image_aspect_replacement import ImageAspect
 import os
 #import scratch_3
 from typing import Tuple
@@ -355,9 +356,12 @@ class KFDataset(Dataset):
 
         points = self.readLandmark(self.image_name, Lumbar_L)
 
-        image_resize = image_aspect(img, H, W).change_aspect_rate().past_background().PIL2ndarray()
+        # image_resize = image_aspect(img, H, W).change_aspect_rate().past_background().PIL2ndarray()
    
-        rate,offset = image_aspect(img, H, W).save_rate()
+        # rate,offset = image_aspect(img, H, W).save_rate()
+        rate,offset = ImageAspect(img, H, W).save_rate()
+        image_resize = ImageAspect(img, H, W).change_aspect_rate().past_background().PIL2ndarray()
+        
         gt_points = points * np.array([rate]) + offset
 
         gt_weight = np.ones((len(points),),dtype=np.float32)
