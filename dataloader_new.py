@@ -98,27 +98,10 @@ class KFDataset(Dataset):
         self.__is_test = config['is_test']
         #fnames = glob.glob(config['path_image'] + "*.jpg")
 
-        # gtnames =
         self.__gts = gts
         self.transforms = transforms
         self.__fold = fold
 
-        # if self.__fold is not None:
-        #     #print("five fold evaluation, using",self.__fold)
-        #     fnames = self.__fold
-        #     self.path_Image = config['train_image_path']
-        # else:
-        #     fnames = glob.glob(self.path_Image + "*.jpg")
-        #     if mode =='train':
-        #         self.path_Image = config['train_image_path']
-        #     else:
-        #         self.path_Image = config['test_image_path']
-        # self.__X = fnames
-        # self.path_label = config['path_label']
-        # self.num_landmark = 24
-
-
-        #self.__heatmap = config['heatmap_path']
         if mode =='train':
             self.path_Image = config['train_image_path']
         else:
@@ -169,8 +152,6 @@ class KFDataset(Dataset):
         #print(torch.max(mask))
         self.guassian_mask = guassian_mask
 
-
-        # gen offset
         self.offset_x = torch.zeros(2*self.Radius, 2*self.Radius, dtype=torch.float)
         self.offset_y = torch.zeros(2*self.Radius, 2*self.Radius, dtype=torch.float)
         for i in range(2*self.Radius):
@@ -179,19 +160,11 @@ class KFDataset(Dataset):
         self.offset_x = self.offset_x * self.mask / self.Radius
         self.offset_y = self.offset_y * self.mask / self.Radius
 
-
-
-        #load image
         if self.__fold is not None:
             x_name = self.__X[item]['image']
         else:
             x_name = self.__X[item]
 
-
-
-        #x_name_fold = self.__fold[item]
-        #R=['004004095d8a302b1c0815ccb044c018', '06a259f4ae485df99dc596672aabc991', '09ecaaed722e41efa3ec09b6894f2327', '0a6e81ba1d360d6a84e3bc83bfdd8c05', '0aeec749d11b8137fe08b5fc23756e5c', '0b21649c6437ef528ddde1a775df2ed5', '0bda50ec61f468738446353ef9e748da', '0e0c76c9dbd1ce7e8392bac497e06884', '0f31f001dafec2c70f1b0979e7699d59', '142dde791188fc1bda8ffe6d24c76129', '1786db1b184acf45dd42314ce5c1d21f', '1e167dd2c8fbbebd884c335b57568148', '1e3f1762839ca8cd0f26523439da7498', '21661a3620cc3bcbb8b1ca4fec35705a', '21b8dffed85143c2657345c687f04376', '2232e19d5c8baf6328ca20b627aea87c', '24d72cde8bf08bff4e4f7e89134d9cc2', '25c0a7c3eb5fc5b75f28f138ad0c4786', '2884d44cf3616557e54556aacb132aec', '28aab7f5b007ac25e93cbe38945bd9b2', '28cd370eced34fbf3818faa92ce3bfb1', '2ccd1f744f0945b2967efc98990d4c34', '2e61add1bc4ce8854fc982bba8324bb1', '2f76cfceec07d963e9528d2fcc762da6', '3244ccdfc5b4f3c7ccd7bb81f21503b4', '37668234bc219836e67d2e179d2f188e', '3858de544a7fdfaa886d4fd0d1bea625', '3cc0a50c9c6f8d47a27ecbcc522c431d', '3eda30a318b13dd71e73566c41a1f9ee', '418f3bf4f2a5f56358a6258b9d4b1a05', '435fd28fda50c323d39d3cb98b3e8d6e', '43bad85e5fdf1b7370419e50e0f9cfe2', '4ca1d3d610c880e54ff85c3cf3defa37', '4d3c5fbe7ad4bccd253ce508ff5bbe58', '50431d1ff6014471d8fbf09a0cf72977', '52d0b9b0028991fa16706f9cb23e23ec', '5ccc047d4e86a2298271d0ea96b6fa43', '5ce5968d9c7c26bcf76300b6821fe528', '635df775b5ccb1048bb62afdd499b872', '659c634524d33d9e950096778064bd42', '662ebaba28cdd01b8a7e7e8136e653e7', '667e121b8c3b255247e2817b43de9924', '675529ac0eea318b6b7c8370b7181d4b', '677be1412e113cc23355c4901fcfc2a0', '67928c2aae3589101c1e94c09343fffb', '6b2f7bf872ae8e8c2bd058a7211fb7f6', '6f4b70b2cb36f77c5fd9a45f4b33fa09', '72315dd93e23b08e8326c10223582920', '74c6220313cf39a5833c82ffc7e16a29', '76eea91caf30863960116dec71852abf', '77f0cf1f8a23a30a39f301f3f3d311c8', '794e37d2c6136e2e5884fc93aae013c3', '7964c3a5fd84c67b2f00e4382c58e4f7', '79d815acb4257e3acb6f0a4203a73e44', '7a88d9475c9eb2620748453d30072c96', '7c745d7d45d72165cee28fd5076f33c9', '7f42c5feec862e674c4a6785bfa18bd7', '7f8792a7af2ec201adfd59bcc268835d', '807a5aea04b84319352ddf783649c7a7', '84c5e11aed3ec6983249e2c172bbd032', '86facb2c15c58a737c65a595a4f856d0', '8bc50808db1ea67f8dc3bcec3721c512', '8dd593b16e7fc5031a5125335ef2e837', '8ea21bb4f9bd5ab60d220547c565d7b4', '911d98f08edf993415f4e0ce37d53080', '91262933572929cab8d0193e72e7c711', '93e77a3d8b84dd198a83c551516be9cd', '9424e05c89ef3294b30c6c65a77d42d0', '972cdc42e329294826672854962c5253', '998554daa9553b1d76e582da9ab0416c', '9aa3bda1a4fe7216ce64a68181346b70', '9c9d922280804c705672fa162c9ef371', '9d8b884877e89f9e0ee0049b208eb871', '9dbde0839006437623b091a06e3d0e8f', '9dbe952cd7cbcac37b6875189024d4db', '9fc4d098038160a31b9d4a5888784207', 'a1d5de476543918aa1724a8007fd6919', 'a79e2e984f3e05cd0733b5782d442a69', 'a93c47078f4dfefc2faeeb9fc0524be7', 'ac3426098066dbf48fb543b6159e6eac', 'b37caacca93d16cf8e6ddca2c17c21fc', 'b77c7f95e4bd6fdd7af28fdb53d99b9a', 'b9f585200c3af81900eedfa18fe516eb', 'ba318b878c95eb016b3f5f8fec67c2cd', 'be32a67c01b045bb1155daa77bcfcdf7', 'c0e608fc717f0811052d0357a10abe8c', 'c2f6582220694e7f304f04ec5e6e39df', 'c350eded2147d690d7fb204fbd00126f', 'c728733c147e60e283850c9df565da4b', 'c7d82e3792fb0cca43e0fee4bb304798', 'c97d027a66867fe02b0ddaeeac59b11f', 'cacd20102ae5ca48207211c5f4c0ec60', 'cb990674c9389ee5ea8b9dfaaee7f299', 'cd703182ca74f511604a36ed457b9318', 'ce9718173c1c2284ca54614dff8251fd', 'cf0ef708fbd9205f5f4d8944440dc301', 'd47b95aa4284bf96743df7e7da30f488', 'd63ab791351b723b06257d401036b8c4', 'd801104158b25810bc9c31864cb31359', 'd84309ed908b43995d68879da87fbb15', 'd8e6745e02d5d3a989f3aa9a38a43c69', 'd95aa6d77f31a6b62e551a8e54e2bfef', 'dee75bea1f7fb520e25ffe24abdb4e7f', 'e30e65aaaaf0bfa7ffdfebdb78be6ce4', 'e4680769569ca93d8f0601f7b9ba0c7e', 'e7474dde06a2e0ba74533553972fb5e8', 'e95ab37c13e4d99b680c7ce067764dc5', 'ea50544011d4f3537e51e84363444104', 'ec7d84324558e7b69256c5db0c48c06b', 'ee247214bd4230deb8c7218acc8e198d', 'f0a9968c6cb2c6b7489067a305145adc', 'f47cee36ff233a912299b9157b8b54fd', 'f72aacf49b55a4750cf91c289c6388dc', 'f8333a067171dce0463346b56a00a335', 'f93c0b3df3566883f7d48e86c4c424a5', 'f99bf290107699bdccf5d19d4ec107a4', 'fc0e766407d1029ab14da02b231e0aec', 'fe8fd8ac383786f4897e1abdf5340290']
-        ##Train_L
         R= ['005c62dd9be402dcd71211d8eb039295', '018c517be75aca8b944ac0aa67f774ec', '01f1c9955550d95b2bcc17cbd0b579bb', '022127b65bd7a0327f61939da82b18a3', '02e8b93b0399f49feee8288bf99da369', '03197b132e36edb09ad2550a8a9a9e6b', '032d9a3ba45707257de035e0e176ce06', '046ad417e62286641ed0be182c4b9822', '04abaca5f2445c02f6b3d9384d151147', '04b73efa20766c684d0c1a1ee1572081', '04d6d5b19317f6f08222031c0ca1fa3c', '04f81b7e27e7e3bbc9a0560d54f0905e', '0505be939209f904b8f2af5613715b14', '0541cd116a2e0ce7a99ba0a89c02940f', '056dc329bbf417de49c8d4994b70e3da', '05fc55402690234545cf3e8e50c31827', '0600fb1c1769e477a2192af209ca03b1', '062955c66c0cd568f287c18027503ca9', '06864f59f6340655660737f113d70e25', '068b15485f53ea7ef3232df94c00b9cc', '06beaaad5436ef6e2af807c039d0494c', '06c2a01673baeeb05ca8e4ff8a5eaf5d', '08b452d45f4af101ca386bc131bd2d2e', '0958d3b865c9279f8c9a434614190fa6', '09c14a0c14441779ab519a9ef3727be5', '0b02a4d87df3ec7d308cd4ecd906e012', '0b6b7ac85b518530563e63538333a754', '0baecdc94e6ed67a44e6b7944d2693ad', '0c02b769f8b7187fb79505c6b14eae51', '0c0bf426a6f3d19703d8dd6df04bc0fc', '0c114909059d7995f85958b07458374c', '0c4181abe2d334ea8ff5cf96f0f1bca1', '0c7384bb49ba71d8967ad5b515222733', '0d7923bfdd60e8bcc7f7d239b6afeedd', '0dc05199b0c949ef173fe6a3e22d88aa', '0df68fc6d17da8b9bfe304496c5ff3e6', '0e2b11022170bc68969f1e5ef2d35e52', '0e2bc9fa73192378e424b97f62727a10', '0e3507cbbffffe85174c28b93e71f1e8', '0f274ee93418a02f92cd39bed269cd98', '0f49ed303dcf9e18c6ff29de0117c6ef', '0f8e10d3ad3bfdee20d03e61b8e69d93', '0fc8efd8b4eceaa2f6b63b164685f0b5', '10a811da101498dc9511eefa19a9306c', '10c5ef129b8b18f38bf3eaf4e3e778a5', '10fa78e22b31787e8b72e9d4310e014b', '112103de07b7f711c4d296a72fbfd0c5', '12dd863cc08032577bb64d799ac8aa6b', '132b13399a67c7cf1e01358e946a668b', '133a7adab739a0770c068ba6af3ec579', '135ad5496300e9133b51484d889ad210', '1435baa98f8fe368fc1df8d7f1ea9df1', '14e242d3a0fdfdae24c24a903ff49c09', '154f3682d270cac6a9f7951fe5ce1064', '1589d99a7b3210aecaf64d0f988f6547', '158c65adb52bf13046e109d919adbacb', '159783dbb14f3d07bc251d94ab4ef987', '15a825d05b0882833aea79ad4737501b', '15ed6e70e77f7f5d57707673ef7433eb', '17158500a85c99a5fa78a939b55e5c40', '174c9711a875f1282ff3fc4d514437a1', '17a167975ab6d5b5f6d6def7d084a9f8', '17a5272c9caacf9c4119978412ec28e7', '17d31096d9156916a4297ac5e3038102', '186e9e75947a629e66b9c95d1e4fb4d0', '18a6ae313392828e73cb5e745f35c942', '18b126d3d3e72438e29bc3998b4c73ae', '18d1d5a65e2315f66c0f8a6a07be5425', '18e6544cc7da7f57f2201ad7426bb3f3', '190d697cb706d4ffb8c620d3f3ee80ce', '194c37abfa12b0cc987d592442b5a4a1', '195f0d67a24e6212ed2b265b358a376f', '195fbdd634c099f25cd83b910961ee72', '1a2feef8dba70b7caffc4879af92bd4b', '1a51f09b18215d752bd21bc1e8a5c431', '1aa1b9772942dbbb80e84d67d7ebb127', '1aa306c220758bdd996fd7d9077a2037', '1b2050efe2e8024c21e26d28de6abd6f', '1b4a1733ae7c8ec1baeed159f632403c', '1b70cb9f34afc8554bd051f27e672a3f', '1c7801c599fe0f10381ada291561f466', '1c7ea15e463ba34cfd2f5dc75d9e091b', '1c938eef2e3107ccfe9734a1c8b21c6b', '1cb3433eeca8608894b6251e994a3b4e', '1cd53730d8fe8569d2ec6c09797c6999', '1d27241f94c95b79a3aba553e7971858', '1e691ec1f242e4b21e127371bbeb47e9', '1ef32c2cd692fa0ae0a84e76bff6c3b7', '1f157bef4876c2e2296314dd91cbd2a4', '1f4c9f1a762e6bcbb74b1062ad678718', '1fba394d9152e833bc814c239d035a5c', '203094a9fda30b708d10d9758824c4f8', '20571f669d17ea74133fe2702f7720ab', '207fe56d6e8f1967fd43ef8958ec5043', '214d4debbb2e4b3f6d3b3a25bfe7bdd4', '222ba2310524d057f81c5a914be05888', '22b9f0d93dea1585fb99a079cf146f58', '235ccd70a4982991c2b6adf3c1146f29', '2369b1838904256a42a9344cd2fb2bc2', '2379527cf7a981dc91619d3d2a11af11', '23c920d93c05a970f5d6921593312eeb', '23fbc00069934894705eae5184280c79', '248ab967eba2f1df3cac806b429dc08e', '24921365236ec5c11c25f21dfc9474f5', '25475e27885f5479a156d550cfb6e3fb', '255ff0d6f9485ef3dfaf8c7dc300217c', '267054bdf2934049cd144f61cf7d6973', '2720a7ebcb1b53649c45bbadca3b9765', '27d4f43dd89a8df225da896ffd2deef8', '27eb852512bb6ff8b93b2572238af816', '28854cde20adacc1229f6bc6ee333e95', '28f2e8cf5052eada9d386d560d7bd405', '2a8d40a9bdc69d93adc69ac4983d2a3f', '2a9ffa1f64026c01ad25e65c9ee0359b', '2af467009ba7ed4c709115a92bdc28e7', '2bd198cf363f45391d955b73028c0b9a', '2cfb0d8b66f4b7452e6fe7ba090d7ca0', '2d8a445cae5dd64a99de7f8d29b9fa3d', '2de9d96b9d49736f3298cb1d431abfc3', '2e98d68eb858603f49f9c6185a0fa333', '2ecae489f669ed94e605ad5df0ea8470', '2f2b78f255458c16a822ccd8471c5b39', '2f300f768ce8ffee6916fe0b8a0f51d6', '2fa4b494c9fc8f7f13ca03c7edef6638', '2fc450b7feb1fe258b76398239c87080', '323f72aff1ef19e40eb68d52b76d3f54', '33261b66d8b5fa5c96a9d760d6323e19', '33cbcc0f6c956a4b222cfa970be85715', '33d50ad9d1dc527636698ae382251544', '34782672830a7e941029fb17a771cc55', '347fa8560941c90df03119545c7df921', '34a288a9d3c3997a7aebc8c1d550941b', '353ee8068f08f99a7e0b98c0862f0472', '359151282b9706d3ee5698c2ab1628ec', '35a4bc5b8ecef4cd358def7dd054aa4f', '35f8b81699c9c4c98fa58dfa49b7ef17', '3646bb8acbaa45160ac7c830d84ecaa8', '368c92ac4f0cfafa065542bf407e8eea', '36b862eaeb25a62a01e9e40c12bc3506', '36c10cee909c60e801582619c7082a9a', '36f8d33336f66c43c3a0937c672c4183', '37640f5fc4c3a52459923040a60ad866', '37845725e0c5fd960a49858c4fd0d140', '37ee1b6c758de6b22b2fac6dabf6d06e', '382b3196d1440d2ddf0ac71c05a7a6dd', '3a7ef53cc64e789d1202e8d3aa0d202a', '3abf24d370b9949a3da08199c6ab8d9a', '3ac504655919e5c97111b8d644209ff7', '3b52598ac23f5de59009cba718369a60', '3c5565181c25ea2b4d15973586bb2608', '3ccf72edb28d283286dbe72ed58cf7a9', '3ceba5100709aae4d5279c1f43979943', '3d3c7d30a5890fa7b6cd7e59087fe040', '3d4a60d47cbb0777cdeb61a5061d14a9', '3d6e07fdf73092f45913f8cecb963bf9', '3db68493c996a1fc43a425a27f910e72', '3e59b0a75a1b2ec0c300dc042ac11e7d', '3e90e6d3b2efb074cb7ba7b56b409fa1', '3ecd4eaf7bd6c930a08089c7b48a3bd8', '3f569624cb0ecc79dc73f038527cbd6b', '40691b4a5b62f99f753180e72131b9dd', '413f4e090b34219230d0660e5b9f253d', '417e225eda1f20e661a9f46e1d7ef761', '41bb3b3fac8efd96de802c164b3af7b9', '42394aacfc2f609a00cedeee163da2ca', '42fa6eb1eac6d7857038ac7ec24fe5d4', '437992798f85ac53e4ab80f23e5877c1', '438d8fc250e4eb61749f828e0555796e', '43c058fa47ee5adc0725caedae605ea2', '43ef677a77de5b9d71c30b4c3b3b4884', '443fcb2d3950e325b456d047ddb2b690', '44fce8e57a0fcd67abb3945dac2d28d5', '451bb3be4908419b1c02792d3a6b5a3a', '45b0ef9cf449195ae678ecabdeb3c50b', '4650d9e66f1fbb7ad348cc7bce218d57', '46a84ffa25efc4bda670e47ae469e77d', '47813cd93b153db707f09d6f9018f549', '478ec4d83ff19fe07708cd294b7beda4', '4792ad92989a6f2f303518739ad8e46d', '47e53467ce62f1e5304a6a1531082f49', '4848b659871e47d61ad452b225cdf21d', '485e388837566eefcb3d37d4b3f35c51', '495b6571bde5dc5e20c858febe9bd864', '49afd71d4673141613034665ad090896', '49b043f966697ee44aaacf93221ee84b', '49dabdf3b1ff2767531a9a1a5e0c94bd', '4a49f48dcec783c2ffe8c5ec163573b2', '4abb454106c527426f6856b2f741d3e5', '4ae71eb1884136b894f5cf3daf3ae34d', '4b26fdff48ae7f585d2c54eabd58cbc7', '4b7de208311195924628a71139d33fe5', '4bed1631d0fc4dddd852d9bfb1c660d9', '4c4fc88a56efa5b8be60e02f9f035430', '4c5f2c33659f2c2244d6a290f5715d48', '4c797876bb1464c432ced0ad197ce540', '4ca4951a4efc4e3f8cf6ba82178ac532', '4cefd674814e5975ca8b11269131ae8b', '4d2cf78c7c591df3ec7ab6876001706f', '4d3009a0405e3c2a15c364810a223465', '4e382181f40896ed6b12a6ff7b44ab16', '4f4387c1f34b3d6b898a6833d1555c48', '4f491da144bfa95a5ed643dc4a0b9810', '4f535f8899bffe33d51cae6c54426b22', '4fcc56bc6e28c0ba654efa293f191498', '50ace599c433d2d1d69c8ee241cbe49e', '50c5677d4f498806a3099b9660a85035', '51055f3ae4ea3ba3baa151c3dfad5a9a', '516615acd3bdaa7e122452fc0ef6b628', '51a0fe0f31164a4e507754c689891305', '51b500a8533a861839b1eb7578599fa3', '522c6ab6fc4beddf53be5fdbbe902ac5', '5254d128393a6921b5ff5149d2185048', '53580958b03190940789d8919f1a882d', '53a2a2627e8729ffd4df88d5d6d192bf', '53bbad056d4be325f52f0fc43c18a6f3', '54352f879934e18f06df0d2c80a9bdd8', '544d268680013324748f636e6c0bfac1', '54739c40f3b622b0c7e598c2a820ce43', '55658b0385da7bb703bb9006c1866342', '559896cbd4ec6160b73fc8a08f3da7b9', '55d26e6c88353ddd4761d1424541573e', '55dad622723618ebd19de86fab5a01db', '55e6f81387b62b6fc08ea87db351ebf0', '5749195f803538b51163e2a825e36f1f', '57510b845a2741f2d86d886aa32ae308', '57f01841eee090ac856f3740393d64c8', '5878fc9630438eb6704cf8f3345b3035', '58fb4176a2c7e2d33f6b5a9edb719b62', '5951e2114ee40dce9a9cd0b85952172e', '5b1de253ba61374437a0e8768c30f46d', '5b61e2f5ffc0f328912013c9790d1a08', '5c8427917a6b81803fcc7140893c9e12', '5cc2ee05ea774026cfbd61b94e9803d2', '5ccba5429bb4ac950c1eab87b359790e', '5d2951baf13fd56ce1723bebcbe30abd', '5dd17e87bed8ae325dbf5890076eb7a7', '5e07a9366575f03081365bd714e960bc', '5eae95b909c5603b7a3582b5b3e0434b', '5ef799a1b07d4735687b4e568d3c0d8c', '5fd1561b5ee106a892f72a6ed5b1061a', '609737fac372eb043127ab4541e5d30a', '610a7c8cc0a95168245fc18f11ff0a47', '612686e82c36530782bbdb745be70b5e', '614b3b521407e115a83193e814be8142', '618952e6b33f6f275bbcd3f1e8d091c3', '626c444b0ae2155fc7264e2fea544c43', '6335aa8cef24028abc10d7d316e87c65', '636b37afd61525fbf4f3394063f66c03', '63e1980558d1430c9326abaf6ab61278', '65043d4ff35d9f1168f9ec35a55ff633', '650aaee8882d173d1d504eab35781b4e', '656babfeea31495f8d22b2d65836c809', '65bdff08eebfbdd90bf2185471dccd5f', '65f65b1c291a18437ba9fe95f889074c', '66385d238bcdeef8dc086e893a341a9e', '6645f8afa7a7ad340f283193326c6bdc', '671c914b5ab983f2b29f3f74053cea40', '68fa0c10986ac9650501978c8679ff42', '6925cb909e3de63e320647da8611e2f9', '69412caa8a0780fe3f5ac5d807cebf03', '6a2caefffce5dac1bc2cf0ceb24fd931', '6ac61a4c78af2dab32dfa36a4865e0eb', '6b14863b20dd4f3833f79d384be97b4a', '6b45ef7c160f897abdea4e6ad4ad4373', '6b9a5747aa6d0504f91b7099833f3c9e', '6c10992b58376083ed1c90c922516ed3', '6c50c4bbf00099a28312e69a01621e0a', '6d1377dce661e0eb96eb6cf096dc8ea8', '6d2518bb66fbc8e6effab5852d73ffc7', '6d7e0ca31f4eaab8bb85cf82c19b4f19', '6d8ea739ccd0d8ad92fe3c020f415b6b', '6dad9b65d51cd775a441224954b57e7e', '6e46cc8957c0997c33957e57758bd077', '6eb1a2c5de029385cf11d40b1471c839', '6ed634cebe2eb8d76871a6d0f7974953', '6ee1e9a7514cf5565fa4b010e0700367', '700f3306e964c5a2d08758e17b663707', '70a43c7f270f1f60d14c997bf6205948', '710204e1b98d951204e861a604cf155c', '7105444028cd7a5360579d042aadab21', '7117dc61e5a523d58378e780212ee2d7', '7190db68e892cbd463d993c9b8958a4c', '7212b2ee13126506828dfd10638f883c', '727de99f5863d5d73bbe5f7a258ee01e', '7282f9e804cfaafbf11ca101de67fd6d', '734d54d8789890bbeabb0a6405d40c74', '7372703e959f12832c1a7bf6597c43ba', '739d835ea77e8aabc4772b7308fb4cad', '74514049c5dfdf3f626b55e40a411e1f', '74b20ed479103fcc9ff015011ad4b3d3', '751d1e722beb0e7f18eb58c004a951de', '760eb8fac568f284ac4816c39230a00e', '7694aebeee349f0f68ed42e5701491ac', '773fe40117b06774e7c3c5e0dba52886', '77bf73af3bacf3d487e18f1c80839c5e', '78295110a2e95f9eb04e15050a925110', '78568d0946ea51f0db2c86c78103d9fd', '78b41344b560bcbecff12907e354ae12', '78b807c9220874d9988a1cc8d790e3b1', '792831257d0a834bccda71ef321abc15', '79538cb90c333410e63430b3136958cb', '796289e838fd76b40cf6398d76c431b8', '7ab3f8aaf8ef5180d828b4f7bee60958', '7adbca70b0828a8165c6e92a45334b91', '7af1dc3e489a61c6395b875ad0dd3d03', '7afb6d4d3cf999989571c9586f6464e8', '7b742d182079a664cd7ccf17377147be', '7b7e6a6dfccf0f22db6d847b59b0b1f1', '7ccbc194e95fb679df75ef335d385d72', '7db309ce823b1c798079751abb800dac', '7e8413a8c49979fb5e85275f23d4ca83', '7f25aa93b506dbcd5a51f35a1a71e7ca', '7fd220b38f7fd94181e70196362ba570', '805947b4d3963772c9e940ab3844e861', '8090f170ac6763c1fa9e72991dfeb1e7', '813b3555b41c98335f57ef7bb58481c3', '81c0197b1c51ecda64c16f61a810dbd9', '820abb20893101754217a14409faa591', '8280727a9d7006302756a54a1bab3ad1', '8282c2ff3a3cf3b917e69c30febb11f9', '82a0c9420b1a245f2dde4cbcb98ba36a', '82ac4bec90734d8713187543fc97d364', '83661b7f79bc4d633c5140d29797a71e', '84a4a0beddd078a2991ca90fa8e1515c', '85332f52ccefaabdb49718cf817f2561', '854579531e9a8ae283ee10622d3722a3', '854c5e8840d1f59aa2a9b940508a172e', '855adcdbf9645d6eb165a64166f4cdd4', '857c4ce0a5f98af6d43cb9076427099c', '8585208069aa743b038759a35669cf2b', '85930307faf2c963674d84532d158560', '85952720751231b23780402e49a36ce9', '85b9c35ff23ccc03980ecf4efa889c1d', '861a6f32ab87d46e76485e970fa116a2', '880a06508d1202e253f7da4ce6946e39', '88274a00b9d54acb6b21414fc92a6bca', '884e3eedbcb647926c910e1c7ae78e3b', '88c78774d9735f8a714c3ac2bb361456', '891439cff15ed916e8995e08765b0808', '8939780b772178822f4517af7764fbc2', '89cf54d876a61e6a11a20df3aa64b0b3', '8a13c6531b246593adb98fcf40b773d3', '8a15eeb1cf0c08767412e02b8d286b3e', '8a3a212148d92f144c1c1d74554b3898', '8a7c3b58e695efb721af3b52e9352a12', '8b2fb89b3bbdad8421edcc0c4a9d295c', '8b43d47243cb8090d524a576ea35be94', '8c4870edcb02f4739cc1db747410210d', '8c5fddbb0a6a34766d1462726fd2dec5', '8cc543a7cb9e611dc25110cf58762f87', '8cd072e02b6907d357ceb008a5eb04ae', '8cd8c40e10998aa2fad7341b548a1659', '8e1784155362debf1736b460d5fd5cfc', '8e885f61bec581624b5abe2410b31bb6', '8e98877ae8108edeec68509f470d0318', '8ec2dadcefad259dee322cb5c6b142ec', '8f4a13753ec160748537349397ae5124', '9025055e7a039288c65b8eed5e8a4209', '9080cac1e6ac1b5f8d59d8a2e2d88841', '90fbd486844c082f24bf2568f8696e43', '910b593bbb7378757065f6a07e0c63d4', '912498e73f4dbfc9e682b606a8b9bc07', '91307fdf248b53957a176c79e873768a', '9163666b6b263d7d6ff3c2404a184c7f', '91aa02bebb7259e57d38f05eed14374d', '91ab2f967b3c59c13666fedf536970c4', '926161f302a58e529ad9406b32a31c7a', '929ee4a5b953f032a6d77c16deb52d71', '92e1224674534f5f3f1ec16a1321c379', '930caad6a4b37ec3400a96b51336ded4', '9335896bf8eb58cffb8c6ae2029c599e', '9351690674607ad131fd7436d5080f0b', '93614f2c29ba59344547c1c8d02ee19c', '93db5ce7cf7e4bbcf15f4a5513632070', '93ee7824ef6d3b0b304bd23ec9d37c7f', '94f6e4fab1ec4a5352060496817ae05f', '9503eb1559a43283a30f3b79b8ee735d', '95acfbb18342e7c397aa7290e0400927', '95b0b649011d298c2bb9d1034dce7ac7', '95e5437b7097b65ca8f1966f81df58df', '9661e30880f828d7371813658fddd16c', '96ba4705be55e2b1e0c3e09a28458fe0', '96f5c0b7e050ddaee55fb48dd11e165f', '97955ec97b8793b63e0a64b526995b7f', '9796f22b9d08a068664c5adb8d0a4739', '982b15ee16f40419b12668fe7070ffa9', '9830c1bfd8a4493d89738c0fe59dada8', '98c8f4801ee4fee5ede6e31be49c68bc', '999bd19cf49222d431793a4ce3aefb23', '99e4f8075030c78afd1641be257d0216', '9a98ec244f3efbaaae8b9f014238a14b', '9aa4e44c4b1a233d2f1b2fe92a37d6a3', '9ac69b03137a6f466bd4d23b20ba8715', '9ae3788a8065fd93f1529e5993fd39fa', '9ba2a7b4cebe7c8cf0357065021c05f4', '9bb732157644bba2cc70e27a9555db1f', '9bda88ae11336bb6039079500de169f1', '9c0628462774976d5e0f246bdaa65934', '9c24f389a14da58542880a859d3117e9', '9c5060a5fd953cbd3c65d649aaef9cea', '9c78a6498910c28bb23eea549fc5a963', '9c8aa8694672c9d6bd2ddab17c01b06a', '9d037fa26666e52a3925174b84832541', '9d4c220a216b0785ac7f3590f5a7aa66', '9db025ea9eb80bfa5004f36798a488b7', '9dd049311d81dbaf96a2dea30a8f2512', '9ddbe28c9e9bfd87a0f05d228f8fa315', '9df14663901e0f9e8df8b34b5dcac20f', '9e66360831ef6efb30078a6dcee96a09', '9f20b4ccffc865c50d3cd7a22a19b333', '9f3196d8e0cb3e06d0e93cd278d66030', 'a099c3864750f7a4b275aea677041fa5', 'a0c650ed33ef92a04a2e900c4e8fc08e', 'a15bd74c2b6afaefe4e69b36b21501e7', 'a1699c25a0dde97a1525891bae9b54d1', 'a1949421345d967feaa903d7a7816ee6', 'a2536d16901e393ff1990eb6882ff211', 'a293df14a3e2a4080567cde8e0d595db', 'a3653e56e654c8eca21be904b86929e8', 'a3d4f5914d5cc0665777fde23c63fe90', 'a3f2dc0e5cf5d445a2f941e19b0a6079', 'a4714b885d3362ad20ab2aa3d188d066', 'a52373001498c6c6226488a13c99ac4f', 'a59505dc59da970f8049280c78fae8f3', 'a63c9b66f064fa8a1db7d0335b5255ba', 'a683ff72d0eba20702fdef06756af059', 'a6ddb68f544c031b457875bcee5d6a8e', 'a767a6f3bed6efb19f4c61e41d098118', 'a7bac447304ce555391898621c6e2e54', 'a831fcb9d8096aa26d939aea8c9b41f3', 'a8abeb180af0036938f087c3bb99f279', 'a8ac41d503c241a2abf96a6f270d498d', 'a8cb36b10a45f2c0caad19c79a5b5894', 'a97c0786642cc630bda215ca50191aee', 'aa7fbd0f55e8df0e83e46b910fc23081', 'aaab276a1ff83ad6cba4a62dd16aa2ed', 'aaecfa666efe42626dc6b0c4035949e6', 'abbd190e963f041d01974bd5425ffc10', 'ac1a073a9ef8dc161997c6bfcd8bfc26', 'acb881d074d06a9f5712becfd04168ba', 'ae7d60b0cd1c905f3188bb5ee97f1ceb', 'aea88c46661ae9397d2208820eff7f76', 'af277c842ed38013b0199e3e2ef417b8', 'af91e4deb579558bd008afec66acf947', 'afc5a9e760859e8ddd281cd532eb54a4', 'afceb01a3e632703128e08d87a692d78', 'b1341ad6b224f23a003973d643632cae', 'b15036d145e5599077718d17b2879c27', 'b1adf6708c0af1523dac04506482c187', 'b242ea54e54fb30f21a60b96c17571ad', 'b291249d43e932826a69921fc8bae81d', 'b43cbe80e46d8bccbde501e65b138c12', 'b474065dad27e6d68882966780536248', 'b4ee248a4ee8612954a7fc1066286253', 'b5061c192e8578b4ece0e46bad04fbd0', 'b528be404d6554802c3f6f2c68fbdc2f', 'b52d59c83b611398ab39949543c2fc90', 'b545e77a6448031c6d83b208d7210fec', 'b545ff58da22495f499d20edec116575', 'b60a28ca8bf45e8da10527869b079eb5', 'b60d083b8f7e791879dfeb6f0abc8554', 'b633e35e8c529d46b34d68ac856e67d7', 'b6720313c03637f23bcee8f9cdfa04ac', 'b6acbe467ec4492d38d95227bca06846', 'b6ba7739417b9f52adfab738bbcdb0ea', 'b758ff234e9bf9bf04f8362e7e6f594c', 'b75fe68235bb2f3dffc84699c81e734e', 'b96c08ef5deba11713949a98486aa01b', 'b9bdb5e5c942ea2aa9fbc6f779b9919d', 'b9c3f3bdc84ba0399f4996e22430fe99', 'bb6122d2a15654da679917b5efa293d0', 'bb6c2f5e9fc157850498fae6229f7d76', 'bb77567d9d9e7876606853c971573b68', 'bba4396a8e984b0b323dfc7c2f5e7d41', 'bbaba25f7bef250f11bbd910ce02070f', 'bbf4a26e8e143d824c3f433fe8073093', 'bc33b118f871469a9a10908fe98f143c', 'bcf61c372fb4f4a162ae30472602a32c', 'bd4db12faaededd683776317fe2366e2', 'bd7fac0fee50775e3d6c48d2a1c9cf70', 'bdb355c064295780a3f939a90e24307f', 'bddd77c4b847c37a9d5d5b3306599a5c', 'be488829d8043203250635bf77849534', 'bfbdfaca24c74d54c25438562878d8dd', 'c094b595b9846448a32d665ad5bb76c0', 'c0ac26c48be890326b80a44c0e11b767', 'c1520c73613e37ddd252de8ad9235cac', 'c1dfaa7c1e3d2b7cf3b6bfdce59684a2', 'c25098675f1b5ecc723b1e939ab91ea3', 'c257799f0ea032e7fc715a46c9224b5a', 'c2a373e368f9b722c6afa00a0be3e6e4', 'c2ad62b46804543ced612ae5d0640aa0', 'c2bf3fd12854c89335ebcf9083e2ae10', 'c3a1102d185837fa76eed86fd7ab69f9', 'c42e1c0273225221c3e72b9b2f241e15', 'c44001dbd2f08c59cfa8795d3890583d', 'c51b4d9312b9ab37a0f6b150e75315f2', 'c51b7f6c1eff863209cfb65733da8c59', 'c55d4898c3171e890bc524c50aace5e7', 'c58aa2c79109b51c7b8459cd772013f2', 'c5f122d573321ca7fee6277b956d8cbf', 'c62b5bf526b31db161eb6bf14ec28b8c', 'c7247127928b5ab1e729d12d3d54713c', 'c803f4dadaca97d3f8bdda04c8ddfdda', 'c8161ad415ecf80c67fbb95db59b489c', 'c83e5960f71b1071e6d86232c43891b0', 'c8bfd3fd5b472685a878ce5254e85688', 'c9a81615d955062e75931386b0e54e2c', 'ca027d498f2af3de4274ebd4b84d7170', 'ca31b7f1fd7d0f932becedaf3f9d8fc0', 'ca4a1c799fbe3bd33333dc4788c341d4', 'ca65498cf5120071b32cc9d81142c864', 'cac889be4b52825dd439887ad2cb1a49', 'cb394b66651325210a3a3fafa38fa2a4', 'cbcb8b3b15dab0e6a6bac490c89b30a0', 'cbde18d677f27e3e88355723ea51abd2', 'cc2834d46d6f1efae021f3b27a4320e0', 'cca0fe032cdc8ed6138c4e5122dd0062', 'cdd50fc44d022a7d97144992eaddd6c3', 'ce76f695fb1f5b1fa25945a66ab75956', 'cf1431e7f2bffad01eaba47f58ee8176', 'cf362cf2850d3dd9b18909f6209a5c11', 'cfacaf6c6e9d35026b957622a0455604', 'd021258c024261b4a2a9b13acfa5912e', 'd0e261cba403e9f74ec11b3642ef527d', 'd16c1783a6788b66e95cb672efa152d2', 'd1a9fbed7f57af5d9b3242a4cd44a692', 'd1b71cb4437364070bf2b09f93c200c8', 'd297fd982d4b0dcdd842b598cb0bd69b', 'd3399376f1c03d95837968e28a5e3cff', 'd45f596b6105c16f39a79059cf0ca182', 'd4dfbb8445f503485e1366205cc763b0', 'd4e8887487a966a6af1c3ab196383ad2', 'd588c2c5855a3d73d1825007b5fca326', 'd6493f426afd6b5b7319c105faed4235', 'd6651e26f6ceb73ead6708963dd60429', 'd6e51ba7d4edd44b6a9b85b07a091298', 'd72f6b5ae02b10202010c366aa032bc1', 'd7b316629688ccde93229ddd669b4d03', 'd7c2d737fe5c599ad8812672b7e21177', 'd872e218dba955ce7d044fef6b27d31f', 'd879356a3d489aa6044ec36b108cd212', 'd87c8f0dc42b7378488b92f1a237a0ec', 'd92f727bb1c6b3f62d6e4045ae433a6e', 'd95cf068b34c870b0f27e90db4efe763', 'd9878a35efbbbe79f0c5e0561a2a5e0e', 'd9a7587d6b89d02e30fd95f10560e597', 'da74087e2285c2fe551921967ad1efaa', 'db1888e1811abccef53faa122faf576d', 'db2051d89d26f502d6a234ad69e4c524', 'dcc48159f2aba04cdd2f30c63fb5b371', 'dcfd5192002800a9a4ed4cc2cdbb0aa8', 'dd11caf2ff79c3e485969385de673633', 'dd2a97999027dfbc91bb0e9a7a26b0c4', 'de558fb6ea4a05a2587fed2adf7da505', 'de56d97aedf9d5ce9352c09cebad56c3', 'de7e0eb6d52aeb9c074e6fce18914908', 'dea2377a4d4efee9413fe5aa223047a3', 'dfbc3dc5e7afb33d3760976fb532330d', 'dff336da37e5204d82c10a61ba15fe16', 'e071c2cecce239c9093e847eea7cc28c', 'e1891792cf36821841b966184ea54f43', 'e1ccebf14c214e15fb6989be77d8961b', 'e1ebaa28e4409315f05605919845f80d', 'e3e3dd69c33ae79c1f46c94b374d297c', 'e3e7e02515a608bcfe25bc132ce548eb', 'e40d5eacc550cd8cbb8ad0689249ff1b', 'e4b77b662bf89d6eb30d661ea765d322', 'e4c9a4013bef413c0140840973df4873', 'e4ff9115c3920bc10f90ba67fdd6a3cf', 'e56b5bc0a1715a6114b8f166e4154306', 'e5bbcc0bdc2c9013388ca3f5c534674c', 'e5fc14cd67e398974aa6b360f36d9088', 'e604addb88dd35cd420efbd4e5c995d9', 'e65650d44627441d0f3dbf8d1175f149', 'e711b85e8c74d073b5ffa1b352d164bb', 'e763aa8e664aa78e356eedcc5adc05a5', 'e7db4d6d01bb69b8d9a602e2a30431e7', 'e8ddffc34781a3ebda23bf1a4202a4f3', 'ea41fbe824dc4792611369e74174cebf', 'eb551a81284abba23873f0613ef2d0c2', 'eb6ad9a6d35dcce75a6a17f0863959e9', 'eb84ed84e1d5fdb27e4b4f957f4efe12', 'ebb7bdde4aef7e6a30413bbdf28160f4', 'ebd604684f5b3106fcf3f50445a8d641', 'ebfc6fce8e33ab5b77f52530d91c11e1', 'ec205f7477c2bf94c37c647702cf58e9', 'ec42bb17609f261dea5728b89b7a0a6d', 'ec6437fe0cccd6b2092145ba7307c60f', 'ecc6c1dd54bcc864b005c3d5c18d0c3d', 'ed7ed561be5e018ca4744f9b777adc62', 'ed86466c8d7e51afe328dd37b08b8cea', 'eda62c5b6f89b5578895f1603cf4edc5', 'ee33c3e0f851290102b09464ae83aaf1', 'eeaccac3522e5d840aa2c6762628272d', 'eec2c09801e54f9e0a99fe8434c49992', 'ef481bf3dd17c4f8fbbf06c2e71bd832', 'ef732510d3045b97d54bde8841aa996b', 'efad5497d68a3bc301ef1590a02177db', 'f063ae9f0620ca9ad69718b6283ae163', 'f098763eaaf41ec0d2d0655a5ffdf264', 'f0a6c8d04f184a68ec432ea35b83022a', 'f164319ea9d41f3afdfb045a1278999e', 'f1af38ee4f7f13fd2c92376d8d479ce1', 'f27267bec9bcbf9669b1053ac168525e', 'f27d35bd29ca63c02bc471a9d851d12b', 'f2a1963d276e5d5077c4a0aeef6257fd', 'f33b36239d2e93b56950d3e30fdb8496', 'f34b820b43a176abb2b8c7fa635d1bf2', 'f3cd1d5b06accb22e0cc5236efb46b06', 'f48a426c45c61f2285504e073f606a2f', 'f591a2a494e8bd220c4f4029039f137c', 'f59bd84ab10341434cfffd06326b6518', 'f5a686f3212579e4c36f22f354cfbfff', 'f5ce48164af70ced78318812bd92f703', 'f5d99dbe29208496343d342d74b605a4', 'f61869cbce83031fbb7b9c8116061952', 'f694de494469fcbe71f07f58b5292b81', 'f6c57281bd68553d9b024fafc691ac11', 'f6c9a78336019c93d27a5fc39717f730', 'f6e923a0b42b3a5d942125c4543f49c2', 'f82d8b5a91d673c5b5d9f426a6ca283c', 'f8b7c41d2da95f2724bf205adc6ef00d', 'f8e78a4ee699f62785cababaae8edd3c', 'f95f84edfa520ddea356462e7002e41b', 'fb103a9856458e8c6f80cd327a3ec0f3', 'fb656d27969a740649fa24b48cac3651', 'fb9816f0edcb72ded135210f76b97701', 'fd49c4885b4e32e057b7b107f17362c9', 'fd9cadbeae4065d696ab755dfae3ed98', 'fdc5b4ca33491ef414caa80ef3a3e044', 'fdcc1b299b2adca7441c6565bdf33f9b', 'fe521258ff5b2fc1e6151d89db8d8a37', 'fed6b6dc1f96b994f58c092dd193b090', 'ffa309d6e738823e8ddf6a3b5dd84c52']
         R_train= ['003b54fbeba8d6135d64df1f2183ea6d', '003d59d9bae7ee202157cbc697ad8221', '0070c01cd48ef4b4824cd0e268aee4f1',
          '00a4089038fb4f7b926624bd31b3ca88', '00cd860d4cf84258a6b2f1da1e671a29', '00d381730c131b6cf25958fb8b97b3b2',
@@ -375,66 +348,35 @@ class KFDataset(Dataset):
         else:
             #print("add flag to Lsize")
             flag = 0
-        #flag = 1
-        #read image
         img, origin_size = self.readImage(
             os.path.join(self.path_Image, self.image_name+'.jpg')
 
         )
 
-        #Img : pil.module modelu:RGB
-
-        #getkeypoints
         points = self.readLandmark(self.image_name, Lumbar_L)
-        # points : List[array]
 
-        # resize while keep ratio
         image_resize = image_aspect(img, H, W).change_aspect_rate().past_background().PIL2ndarray()
-        # x: ndarray
-
-
+   
         rate,offset = image_aspect(img, H, W).save_rate()
         gt_points = points * np.array([rate]) + offset
 
-
-        #create loss_mask
         gt_weight = np.ones((len(points),),dtype=np.float32)
         for i in range(len([points])):
             if points[i][1]==0 :
                 gt_weight[i]= 0
         loss_mask = torch.as_tensor(gt_weight, dtype=torch.float32)
-
-        #loss_mask :Tensor
-
-
-        # loading heatmaps from .npy file
-        #heatmaps = self.load_heatmap(self.path_label,self.image_name)
-
         bboxs = self.readbbox(self.image_name)
         labels = self.create_label(points, bboxs)
 
 
 
         if self.transforms is not None:
-            #x = copy.deepcopy(x).astype(np.uint8).reshape(1,512, 512)
-            #heatmaps = copy.deepcopy(heatmaps).astype(np.uint8).reshape(24, 512, 512)
-
-
-            #image _equal
-
-            # image_cv = cv2.cvtColor(x,cv2.COLOR_RGB2GRAY)
-            # image_resize = cv2.equalizeHist(image_cv)
+          
             image_transform, gt_points ,flag= self.transforms(image_resize, gt_points,flag)
             image_transform = image_transform.reshape(-1, H, W)
             image = np.asarray(image_transform)/1.0
-            #img = np.repeat(image[:, :, np.newaxis], 3, axis=2).reshape(-1,H,W)
             image = torch.tensor(image,dtype=float)
 
-            #
-            #heatmaps = heatmaps.numpy().reshape(24,H,W)
-
-
-        #self.num_landmark = 20
         gt = torch.zeros((self.num_landmark, H, W), dtype=torch.float)
         mask = torch.zeros((self.num_landmark, H, W), dtype=torch.float)
         guassian_mask = torch.zeros((self.num_landmark, H, W), dtype=torch.float)
@@ -455,26 +397,12 @@ class KFDataset(Dataset):
 
             mask[i][margin_y_bottom:margin_y_top, margin_x_left:margin_x_right] = \
                 self.mask[0:margin_y_top - margin_y_bottom, 0:margin_x_right - margin_x_left]
-            #print(torch.max(mask[i]))
             guassian_mask[i][margin_y_bottom:margin_y_top, margin_x_left:margin_x_right] = \
                 self.guassian_mask[0:margin_y_top - margin_y_bottom, 0:margin_x_right - margin_x_left]
             offset_x[i][margin_y_bottom:margin_y_top, margin_x_left:margin_x_right] = \
                 self.offset_x[0:margin_y_top - margin_y_bottom, 0:margin_x_right - margin_x_left]
             offset_y[i][margin_y_bottom:margin_y_top, margin_x_left:margin_x_right] = \
                 self.offset_y[0:margin_y_top - margin_y_bottom, 0:margin_x_right - margin_x_left]
-
-        #label = torch.as_tensor(label)
-        #print(label)
-        #x = np.array(x).reshape((1, H, W)).astype(np.float32)
-        #heatmaps = heatmaps.astype(np.float32)
-
-        ## save gt mask
-        # mask_np = np.array(mask)
-        # #plt.imshow(image_transform.reshape(512,512))
-        #
-        # plt.imshow(mask_np.max(0).reshape(512,512),cmap='viridis')
-        # plt.savefig("./mask_gt/mask_{}.jpg".format(self.image_name))
-        #plt.show()
 
         info = {
             "image_id": self.image_name,
@@ -488,42 +416,13 @@ class KFDataset(Dataset):
             "heatmaps" :mask,
             "offset_x" :offset_x,
             "offset_y" :offset_y,
-
-
         }
 
-            #gt = gt.numpy().reshape(24,2)
 
         if self.__debug_vis == True:
-            #for i in range(heatmaps.shape[0]):
-                #x = cv2.cvtColor(x, cv2.COLOR_RGB2GRAY)
-                #img = copy.deepcopy(x).astype(np.uint8).reshape(H,W,1)
-            #print(torch.max(mask))
-                #self.visualize_heatmap_target(image_transform ,points, bboxs, copy.deepcopy(heatmaps), self.image_name)\
             self.visualize_heatmap_target(image_transform, gt_points, bboxs, mask, self.image_name)
 
-
-        #print(label)
-        # points_list=[]
-        # label_list = []
-        # for point in points:
-        #     points_list.append(point.tolist())
-        # for label in labels:
-        #     label_list.append(label.tolist())
-        #
-        # # #c
-        # # #headers = ('id', 'origin_size', 'scale', 'pad', 'landmark')
-        # keypoints = {'id': self.image_name,'origin_size':(origin_size[0],origin_size[1]),'scale':rate,
-        #              'pad':[offset[0],offset[1]],'landmark':points_list,'labels':label_list}
-
-
-
         return image,info
-
-
-    #
-
-
 
     def parse_xml_to_dict(self, xml):
         """
@@ -585,7 +484,6 @@ class KFDataset(Dataset):
                      label[i] = 1
         return label
 
-
     def CenterGaussianHeatMap(self,keypoints, height, weight, variance):
 
         c_x = keypoints[0]
@@ -601,8 +499,6 @@ class KFDataset(Dataset):
         xmax = max(map(max, gaussian_map))
         xmin = min(map(min, gaussian_map))
         gaussian_map_nor = (gaussian_map-xmin)/(xmax-xmin)
-        #Gau = Image.fromarray(gaussian_map)
-        #Gau.show()
         return gaussian_map_nor
 
     def _putGaussianMaps(self,keypoints, crop_size_y, crop_size_x, sigma):
@@ -619,8 +515,6 @@ class KFDataset(Dataset):
         point_num = len(all_keypoints)  # 4
         heatmaps_this_img = []
         for k in range(point_num):  # 0,1,2,3
-            #flag = ~np.isnan(all_keypoints[k,0])
-            #heatmap = self._putGaussianMap(all_keypoints[k],flag,crop_size_y,crop_size_x,stride,sigma)
             heatmap = self.CenterGaussianHeatMap(keypoints=all_keypoints[k], height=crop_size_y, weight=crop_size_x, variance=sigma)
             heatmap = heatmap[np.newaxis,...]
             heatmaps_this_img.append(heatmap)
@@ -641,7 +535,6 @@ class KFDataset(Dataset):
         return img,origin_size
 
     def readLandmark(self, name, origin_size):
-
         path = os.path.join(self.path_label, name+'_jpg_Label.json')
         kp = []
 
@@ -651,12 +544,10 @@ class KFDataset(Dataset):
             mark_list_model = gt_json['Models']['LandMarkListModel']
             points = mark_list_model['Points'][0]['LabelList']
 
-
             for i in range(self.num_landmark):
                 if i >=len(points):
                     landmark = np.array([0,0])
                     kp.append((i+2+len(points),landmark))
-
                 else:
                     landmark = np.array([points[i]['Position'][0],points[i]['Position'][1]])
                     kp.append((points[i]['Label'],landmark))
@@ -674,40 +565,7 @@ class KFDataset(Dataset):
                 for j in range(self.num_landmark):
                     points_in_image.append(kp[j][1])
 
-
-            #print('end')
-
-
-
-
-            # for i in range(self.num_landmark):
-            #     landmark= [float(i) for i in f.readline().split(',')]
-            #     points.append(landmark)
-            # points = np.array(points)
-
         return points_in_image
-
-    # def draw_box(image, boxes, classes, keypoints, scores, category_index, thresh=0.5, line_thickness=8):
-    #     box_to_display_str_map = collections.defaultdict(list)
-    #     box_to_color_map = collections.defaultdict(str)
-    #
-    #     filter_low_thresh(boxes, scores, classes, category_index, thresh, box_to_display_str_map, box_to_color_map)
-    #
-    #     # Draw all boxes onto image.
-    #     draw = ImageDraw.Draw(image)
-    #     im_width, im_height = image.size
-    #     for box, color in box_to_color_map.items():
-    #         xmin, ymin, xmax, ymax = box
-    #         (left, right, top, bottom) = (xmin * 1, xmax * 1,
-    #                                       ymin * 1, ymax * 1)
-    #         draw.line([(left, top), (left, bottom), (right, bottom),
-    #                    (right, top), (left, top)], width=line_thickness, fill=color)
-    #         draw_text(draw, box_to_display_str_map, box, left, right, top, bottom, color)
-    #     for x, y in keypoints:
-    #         shape = [(x - 5, y - 5), (x + 5, y + 5)]
-    #         draw.ellipse(shape, fill="#ffff33")
-
-
 
     def visualize_heatmap_target(self, oriImg, gt, bbox, heatmap,name):
 
@@ -721,32 +579,15 @@ class KFDataset(Dataset):
         plt.subplot(2,2,2)
         plt.imshow(stacked_img,cmap=plt.get_cmap('gray'))
 
-        # for j in range(len(bbox)):
-        #     x = bbox[j][0]
-        #     y = bbox[j][1]
-        #     width = bbox[j][2]-bbox[j][0]
-        #     height = bbox[j][3]-bbox[j][1]
-        #     rect = patches.Rectangle((x,y),width,height,linewidth=1,edgecolor='r',facecolor='none')
-        #     ax.add_patch(rect)
         for i in range(len(gt)):
             plt.scatter(gt[i][0], gt[i][1])
             plt.text(gt[i][0], gt[i][1], '{}'.format(index[i]), color='g')
-        #plt.savefig('./Input_train/{}.jpg'.format(name))
-        #plt.show(block=False)
-        #plt.pause(2)
-        #plt.close()
 
         plt.figure(2)
         for i in range(24):
             plt.subplot(4, 6, i+1)
-            #plt.imshow(oriImg)
             plt.imshow(heatmap[i],cmap=plt.get_cmap('gray'))
-
         plt.show()
-
-
-
-
 
 if __name__ == '__main__':
     #from train import config
@@ -762,13 +603,12 @@ if __name__ == '__main__':
 
     config['train_fname'] = ''
     config['test_fname'] = ''
-    # config ['path_image'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_train/'
+    
     config['test_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_test/'
     config['train_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_train/'
 
     config['path_label'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/lumbar_json/'
     config['path_label_train'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/train_json/'
-    # config['json_path']='/public/huangjunzhang/test/keypoints_train.json'
     config['is_test'] = False
 
     config['save_freq'] = 10
@@ -808,61 +648,23 @@ if __name__ == '__main__':
     floder = KFold(n_splits=5, random_state=42, shuffle=True)
     data_dicts1 = [{'image': image_name, 'label': label_name}
                    for image_name, label_name in zip(images1, labels1)]
-    #
+    
     train_files = []
     test_files = []
     for k, (Trindex, Tsindex) in enumerate(floder.split(data_dicts1)):
         train_files.append(np.array(data_dicts1)[Trindex].tolist())
         test_files.append(np.array(data_dicts1)[Tsindex].tolist())
     data_transform = {
-        "train": transform_new.Compose([
-                                     #transform_new.RandomCrop(),
-                                     #transform_new.Resize(512,512),
-                                     #transforms.ReservePixel(),
+        "train": transform_new.Compose([   
                                      transform_new.RandomHorizontalFlip(0.5),
                                      transform_new.ToTensor()]),
-        "val": transform_new.Compose([transform_new.ToTensor(),
-                                   #transforms.Resize(512,512)
+        "val": transform_new.Compose([transform_new.ToTensor(),                           
         ])
     }
     dataset = KFDataset(config, 'train',transforms=data_transform["train"],fold=train_files[0])
-    #dataset = KFDataset(config, mode='train', transforms=None)
 
     dataLoader = DataLoader(dataset=dataset, batch_size=1, shuffle=False)
-    # label_non =[]
-    # label_non_rate = []
-    # keypoints_all = []
+
     for i, (x, info) in enumerate(dataLoader):
-
-        #keypoints_all.append(keypoints)
-
         print(info["label"])
-        # #label_non.append(sum(j>0 for j in info["label"])/24)
-        #
-        # non  = sum(j>0 for j in info["label"][i%1])
-        # label_non.append(int(non))
-
-
         print('batch')
-
-    # headers = ('id', 'origin_size', 'scale', 'pad', 'landmark','labels')
-    # with open('test_vert2.0.csv', 'w', encoding='utf-8', newline='')as f:
-    #     write = csv.DictWriter(f,headers)
-    #     write.writeheader()
-    #
-    #
-    #     for keypoints in keypoints_all:
-    #          #write.writerow(keypoints)
-    #          write.writerow(keypoints)
-
-
-    # print(label_non)
-    # for non in label_non:
-    #     non /= 24
-    #     label_non_rate.append(non)
-    # label = np.array(label_non)
-    # rate = np.array(label_non_rate)
-    # plt.plot()
-    # for i in range(len(rate)):
-    #     plt.scatter(i,rate[i],s=5,c='b')
-    # plt.show()
