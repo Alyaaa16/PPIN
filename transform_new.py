@@ -1,7 +1,8 @@
 import random
 import torch
 import numpy as np
-from resize import image_aspect
+# from resize import image_aspect
+from image_aspect_replacement import ImageAspect
 from torchvision.transforms import functional as F
 from PIL import Image, ImageEnhance
 from PIL.ImageFilter import BLUR
@@ -196,9 +197,11 @@ class Resize(object):
         self.H = H
         self.W = W
     def __call__(self,image,gt):
-        x = image_aspect(image, self.H, self.W).change_aspect_rate().past_background().PIL2ndarray()
-        rate, offset = image_aspect(image, self.H, self.W).save_rate()
-        #print(offset)
+        # x = image_aspect(image, self.H, self.W).change_aspect_rate().past_background().PIL2ndarray()
+        # rate, offset = image_aspect(image, self.H, self.W).save_rate()
+        x = ImageAspect(image, self.H, self.W).change_aspect_rate().past_background().PIL2ndarray()
+        rate, offset = ImageAspect(image, self.H, self.W).save_rate()        
+        
         gt = gt * np.array([rate]) + offset
         return x,  gt
 
