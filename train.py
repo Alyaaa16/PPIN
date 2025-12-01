@@ -1,4 +1,3 @@
-#coding=utf-8
 import torch
 from torch.autograd import Variable
 from torch.backends import cudnn
@@ -26,8 +25,8 @@ config['debug_vis'] = False
 
 config['train_fname'] = ''
 config['test_fname'] =''
-config ['test_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_test/'
-config ['train_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_train/'
+config ['test_image_path'] ='/kaggle/input/vindr-spinexray/physionet.org/files/vindr-spinexr/1.0.0/test_images' 
+config ['train_image_path'] = '/kaggle/input/annotated-medical-image-dataset-for-spinal-lesions/physionet.org/files/vindr-spinexr/1.0.0/train_images'
 
 config['path_label'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/'
 config['path_label_train'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/lumbar_json'
@@ -68,7 +67,6 @@ config['featurename2id'] = {
 
 def get_peak_points(heatmaps):
     """
-
     :param heatmaps: numpy array (N,24,256,256)
     :return:numpy array (N,24,2) #
     """
@@ -89,7 +87,6 @@ def get_peak_points(heatmaps):
 
 def get_mse(pred_points,gts,indices_valid=None):
     """
-
     :param pred_points: numpy (N,4,2)
     :param gts: numpy (N,4,2)
     :return:
@@ -139,12 +136,9 @@ def main(args):
                                      transforms.Blur(),
                                      transforms.Brightness(),
                                      transforms.ToTensor(),
-
-                                     # transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
                                      ]),
 
         "val" : transforms.Compose([transforms.ToTensor(),
-                                    # transforms.Normalize([0.485,0.456,0.406],[0.229,0.224,0.225])
                                     ])
     }
 
@@ -212,7 +206,6 @@ def main(args):
         train_sampler.set_epoch(epoch)
         model.train()
         for i, (inputs, heatmaps_targets, gts, loss_mask, label ) in enumerate(trainDatasetloader):
-
             lam = 0.01
             inputs = Variable(inputs).cuda().float()
 
@@ -224,8 +217,6 @@ def main(args):
             outputs = outputs.to(torch.float32)
 
             heatmaps_targets = heatmaps_targets.to(torch.float32)
-            # print(torch.max(outputs[0]), torch.min(outputs[0]))
-            # print(torch.max(heatmaps_targets[0]),torch.min(heatmaps_targets[0]))
             outputs = outputs * mask
             heatmaps_targets = heatmaps_targets * mask
 
@@ -249,8 +240,6 @@ def main(args):
 
         if (epoch+1) % config['save_freq'] == 0 or epoch == config['epoch_num'] - 1:
             torch.save(model.state_dict(),'./Checkpoints/kd_MLTGPU_epoch_{}_model.ckpt'.format(epoch))
-            #evaluate_one(model=model, data_loader=valdatasetloader)
-            #evaluate_one(model=model, dataloader=testDataLoader)
 
     plt.figure()
     plt.plot(train_loss, 'b-', label='Recon_loss')
@@ -259,7 +248,6 @@ def main(args):
     plt.show()
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--epochs', type=int, default=config['epoch_num'])
     parser.add_argument('--batch-size', type=int, default=config['batch_size'])
@@ -267,7 +255,6 @@ if __name__ == '__main__':
     parser.add_argument('--lrf', type=float, default=0.1)
     # 是否启用SyncBatchNorm
     parser.add_argument('--syncBN', type=bool, default=True)
-
     parser.add_argument('--device', default='cuda', help='device id (i.e. 0 or 0,1 or cpu)')
     # 开启的进程数(注意不是线程),不用设置该参数，会根据nproc_per_node自动设置
     parser.add_argument('--world-size', default=4, type=int,
