@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import pandas as pd
 import torch
 import numpy as np
@@ -15,14 +13,12 @@ import itertools
 # from resize import image_aspect
 from image_aspect_replacement import ImageAspect
 import os
-#import scratch_3
 from typing import Tuple
 from lxml import etree
 import math
 import transform_new
 import csv
 import collections
-#from train import config
 index = [
     'C2_TR',
     'C2_TL',
@@ -127,9 +123,6 @@ class KFDataset(Dataset):
             print("Creating dataloader for cervical training")
             self.num_landmark = 24
 
-
-
-
     def __len__(self):
         return len(self.__X)
 
@@ -150,7 +143,6 @@ class KFDataset(Dataset):
                     guassian_mask[i][j] = math.exp(-0.5 * math.pow(distance, 2) /\
                         math.pow(self.Radius, 2))
         self.mask = mask
-        #print(torch.max(mask))
         self.guassian_mask = guassian_mask
 
         self.offset_x = torch.zeros(2*self.Radius, 2*self.Radius, dtype=torch.float)
@@ -344,26 +336,19 @@ class KFDataset(Dataset):
         #get_id
         self.image_name = x_name.split('/')[5].split('.')[0]
         if self.image_name in R_train:
-            #print("scan {} add flag to Rsize".format(self.image_name))
             flag = 1
         else:
-            #print("add flag to Lsize")
             flag = 0
         img, origin_size = self.readImage(
-            os.path.join(self.path_Image, self.image_name+'.jpg')
-
-        )
-
+            os.path.join(self.path_Image, self.image_name+'.jpg'))
         points = self.readLandmark(self.image_name, Lumbar_L)
 
         # image_resize = image_aspect(img, H, W).change_aspect_rate().past_background().PIL2ndarray()
-   
         # rate,offset = image_aspect(img, H, W).save_rate()
         rate,offset = ImageAspect(img, H, W).save_rate()
         image_resize = ImageAspect(img, H, W).change_aspect_rate().past_background().PIL2ndarray()
         
         gt_points = points * np.array([rate]) + offset
-
         gt_weight = np.ones((len(points),),dtype=np.float32)
         for i in range(len([points])):
             if points[i][1]==0 :
@@ -371,8 +356,6 @@ class KFDataset(Dataset):
         loss_mask = torch.as_tensor(gt_weight, dtype=torch.float32)
         bboxs = self.readbbox(self.image_name)
         labels = self.create_label(points, bboxs)
-
-
 
         if self.transforms is not None:
           
@@ -422,10 +405,8 @@ class KFDataset(Dataset):
             "offset_y" :offset_y,
         }
 
-
         if self.__debug_vis == True:
             self.visualize_heatmap_target(image_transform, gt_points, bboxs, mask, self.image_name)
-
         return image,info
 
     def parse_xml_to_dict(self, xml):
@@ -454,7 +435,7 @@ class KFDataset(Dataset):
 
     def readbbox(self, name):
         boxes = []
-        root_dir = "/public/huangjunzhang/KeyPointsDetection-master/Annotations/"
+        root_dir = "/kaggle/input/vindr-spinexray/physionet.org/files/vindr-spinexr/1.0.0/annotations"
         xml_path = root_dir+name+".xml"
         with open(xml_path) as fid:
             xml_str = fid.read()
@@ -474,7 +455,6 @@ class KFDataset(Dataset):
 
             boxes.append([xmin, ymin, xmax, ymax])
         return boxes
-
 
     def create_label(self,points ,bboxs):
         label = np.zeros((self.num_landmark))
@@ -507,7 +487,6 @@ class KFDataset(Dataset):
 
     def _putGaussianMaps(self,keypoints, crop_size_y, crop_size_x, sigma):
         """
-
         :param keypoints: (24,2)
         :param crop_size_y: int  512
         :param crop_size_x: int  512
@@ -532,7 +511,6 @@ class KFDataset(Dataset):
         heatmaps_this_img = np.load("{}.npy".format(npy_path))
         return heatmaps_this_img
 
-
     def readImage(self,path):
         img = Image.open(path).convert('RGB')
         origin_size = img.size
@@ -541,7 +519,6 @@ class KFDataset(Dataset):
     def readLandmark(self, name, origin_size):
         path = os.path.join(self.path_label, name+'_jpg_Label.json')
         kp = []
-
         with open (path, 'r') as f:
             gt_json = json.load(f)
             #get label
@@ -563,12 +540,10 @@ class KFDataset(Dataset):
                 points_in_image = []
                 for j in range(self.num_landmark):
                     points_in_image.append(swapped_list[j][1])
-
             else:
                 points_in_image = []
                 for j in range(self.num_landmark):
                     points_in_image.append(kp[j][1])
-
         return points_in_image
 
     def visualize_heatmap_target(self, oriImg, gt, bbox, heatmap,name):
@@ -608,8 +583,8 @@ if __name__ == '__main__':
     config['train_fname'] = ''
     config['test_fname'] = ''
     
-    config['test_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_test/'
-    config['train_image_path'] = '/public/huangjunzhang/KeyPointsDetection-master/dataloader_train/'
+    config['test_image_path'] = '/kaggle/input/vindr-spinexray/physionet.org/files/vindr-spinexr/1.0.0/test_images'
+    config['train_image_path'] = '/kaggle/input/annotated-medical-image-dataset-for-spinal-lesions/physionet.org/files/vindr-spinexr/1.0.0/train_images'
 
     config['path_label'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/lumbar_json/'
     config['path_label_train'] = '/public/huangjunzhang/KeyPointsDetection-master/txt/train_json/'
